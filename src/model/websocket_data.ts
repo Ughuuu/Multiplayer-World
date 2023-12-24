@@ -26,6 +26,7 @@ export class WebSocketData {
 
     static async create() {
         WebSocketData.redisClient.on('error', err => console.log('Redis Client Error', err));
+        console.log(`🔥 Connecting to Redis at ${process.env.REDIS_URL}`);
         await WebSocketData.redisClient.connect();
         try {
             await WebSocketData.redisClient.ft.create('idx:users', { 'position': { 'type': SchemaFieldTypes.GEO, 'as': 'position' } }, { ON: 'HASH', PREFIX: 'user:' });

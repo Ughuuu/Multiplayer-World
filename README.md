@@ -36,8 +36,14 @@ erDiagram
     API_CLIENT 1--1+ NODEJS : websocket
 ```
 
+## Requirements
+
+- [Redis Stack](https://redis.io/download/)
+- [Bun](https://bun.sh)
 
 ## Development
+Create an .env file.
+
 To start the development server run:
 ```bash
 bun start
