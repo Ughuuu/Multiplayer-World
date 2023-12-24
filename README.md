@@ -1,15 +1,53 @@
-# Elysia with Bun runtime
+# Multiplayer world
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
+## Motivation
+
+I always find myself making multiple **minigames**. So I wanted to build a sort of an environment where people can:
+- move
+- chat
+- talk
+- play
+
+I also wanted to have some common things for the games:
+- common menu
+- matchmaking
+- avatars
+
+I propose for this the following architecture:
+
+```mermaid
+---
+title: Multiplayer World
+---
+erDiagram
+    REDIS 1+--1+ NODEJS : under_firewall
+    REDIS {
+        string id
+        string name
+        string lobby
+        geo position
+    }
+    NODEJS {
+        enum message_type
+        string data
+        string auth_token
+    }
+    GODOT 1--1+ NODEJS : websocket
+    API_CLIENT 1--1+ NODEJS : websocket
 ```
+
 
 ## Development
 To start the development server run:
 ```bash
-bun run dev
+bun start
 ```
 
-Open http://localhost:3000/ with your browser to see the result.
+To connect from terminal a websocket, run:
+
+```
+bunx wscat -c ws://localhost:3000
+```
+
+## Commands
+
