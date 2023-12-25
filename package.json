@@ -4,7 +4,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "bun run --watch src/index.ts",
-    "build": "bun build src/index.ts --target bun --compile --outfile app"
+    "build": "bun build src/index.ts --target bun --compile --outfile build/app"
   },
   "devDependencies": {
     "bun-types": "latest"

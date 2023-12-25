@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://bnruuei4bma3q"]
+
+[ext_resource type="Texture2D" uid="uid://coqjollnwgdxa" path="res://icon.svg" id="1_boqu3"]
+
+[node name="Sprite2D" type="Sprite2D"]
+texture = ExtResource("1_boqu3")
+
+[node name="Label" type="Label" parent="."]
+custom_minimum_size = Vector2(150, 2.08165e-12)
+offset_left = -75.0
+offset_top = -110.0
+offset_right = 75.0
+offset_bottom = -61.0
+text = "Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+uppercase = true

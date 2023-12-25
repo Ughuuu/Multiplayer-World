@@ -13,22 +13,17 @@ const server = Bun.serve<WebSocketData>({
     })) {
       return;
     }
-    return new Response("Upgrade failed :(", { status: 500 });
+    let filePath = new URL(req.url).pathname;
+    const publicFolder = "./"
+    if (filePath == "/") {
+      filePath = "index.html";
+    }
+    let response = new Response(Bun.file(publicFolder + filePath))
+    response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
+    response.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
+    return response
   },
   websocket: {
-    sendPings: true,
-    ping(ws, data) {
-      console.log('ping')
-    },
-    async pong(ws, data) {
-      try {
-        for (const controller of ws.data.controllers) {
-          await controller.pong(ws);
-        }
-      } catch (err: any) {
-        ws.sendText(JSON.stringify({ error: err.message }));
-      }
-    },
     async open(ws: ServerWebSocket<WebSocketData>) {
       try {
         for (const controller of ws.data.controllers) {

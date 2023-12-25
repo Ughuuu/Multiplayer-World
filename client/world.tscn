@@ -1,0 +1,100 @@
+[gd_scene load_steps=11 format=3 uid="uid://64ja8xphwkof"]
+
+[ext_resource type="Script" path="res://MultiplayerWorld.gd" id="1_wjasi"]
+[ext_resource type="Script" path="res://ChatController.gd" id="2_b7gn2"]
+[ext_resource type="Script" path="res://CharacterBody2D.gd" id="4_c86ke"]
+[ext_resource type="PackedScene" uid="uid://bnruuei4bma3q" path="res://player.tscn" id="5_jacpj"]
+[ext_resource type="Script" path="res://PlayersController.gd" id="5_nv26b"]
+[ext_resource type="Script" path="res://Player.gd" id="6_tj4ai"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tjhxc"]
+radius = 61.0082
+
+[sub_resource type="Theme" id="Theme_ftuyb"]
+default_font_size = 26
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cq04m"]
+size = Vector2(2171, 67)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pebgy"]
+size = Vector2(62, 1190.5)
+
+[node name="World" type="Node2D"]
+
+[node name="MultiplayerWorld" type="Node" parent="."]
+script = ExtResource("1_wjasi")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+script = ExtResource("4_c86ke")
+
+[node name="Sprite2D" parent="CharacterBody2D" instance=ExtResource("5_jacpj")]
+script = ExtResource("6_tj4ai")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
+shape = SubResource("CircleShape2D_tjhxc")
+
+[node name="Players" type="Node2D" parent="." node_paths=PackedStringArray("multiplayer_world", "player")]
+script = ExtResource("5_nv26b")
+multiplayer_world = NodePath("../MultiplayerWorld")
+player = NodePath("../CharacterBody2D/Sprite2D")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" node_paths=PackedStringArray("multiplayer_world", "line_edit", "chat_label", "stats_label")]
+custom_minimum_size = Vector2(400, 200)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -288.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = SubResource("Theme_ftuyb")
+script = ExtResource("2_b7gn2")
+multiplayer_world = NodePath("../../MultiplayerWorld")
+line_edit = NodePath("VBoxContainer/LineEdit")
+chat_label = NodePath("VBoxContainer/RichTextLabel")
+stats_label = NodePath("VBoxContainer/Label")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Online: 0"
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 2
+bbcode_enabled = true
+scroll_following = true
+selection_enabled = true
+
+[node name="LineEdit" type="LineEdit" parent="CanvasLayer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.6, 0.6)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-59.5, 431.5)
+shape = SubResource("RectangleShape2D_cq04m")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-50, -699)
+shape = SubResource("RectangleShape2D_cq04m")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-1097, -130.25)
+shape = SubResource("RectangleShape2D_pebgy")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(1020, -130)
+shape = SubResource("RectangleShape2D_pebgy")

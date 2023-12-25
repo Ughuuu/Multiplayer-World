@@ -19,9 +19,6 @@ export class RedisController implements WebsocketController<WebSocketData> {
         await this.sendInfo()
     }
 
-    async pong(ws: ServerWebSocket<WebSocketData>) {
-    }
-
     async close(ws: ServerWebSocket<WebSocketData>) {
         await WebSocketData.redisClient.del(`user:${ws.data.id}`)
         await this.sendInfo()

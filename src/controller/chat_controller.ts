@@ -12,11 +12,6 @@ export class ChatController implements WebsocketController<WebSocketData> {
         this.server.publish("global", JSON.stringify({ type: ReturnType.Chat, data: msg }));
     }
 
-    async pong(ws: ServerWebSocket<WebSocketData>) {
-        console.log('pong')
-        await WebSocketData.redisClient.expire(`user:${ws.data.id}`, EXPIRE_TIME)
-    }
-
     async close(ws: ServerWebSocket<WebSocketData>) {
         const msg = `[b]${ws.data.redisData.name}[/b] has left the chat`;
         ws.unsubscribe("global");
