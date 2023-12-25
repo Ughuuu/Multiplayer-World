@@ -16,7 +16,7 @@ const server = Bun.serve<WebSocketData>({
     let filePath = new URL(req.url).pathname;
     const publicFolder = "."
     if (filePath == "/") {
-      filePath = "index.html";
+      filePath = "/index.html";
     }
     console.log(publicFolder + filePath)
     let response = new Response(Bun.file(publicFolder + filePath))
