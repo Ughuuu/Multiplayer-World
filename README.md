@@ -142,7 +142,7 @@ bunx wscat -c ws://localhost:3000
 
 ## Deployment
 
-I am using currently [Redis Cloud](https://redis.com/cloud/overview/) free instance for redis server.
+I am using currently [Upstash](https://upstash.com) free instance for redis server.
 
 For the bun app I am using an [Azure Web App](https://azure.microsoft.com/en-us/products/app-service/web) set as NodeJS and then customizing it's start to run the bun binary instead.
 

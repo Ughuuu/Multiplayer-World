@@ -22,7 +22,7 @@ export class WebSocketData {
     id: string = randomSecret(256)
     redisData: RedisData = new RedisData()
     controllers: WebsocketController<WebSocketData>[]
-    static redisClient: RedisClientType = createClient({ url: process.env.REDIS_URL, password: process.env.REDIS_PASSWORD,  });
+    static redisClient: RedisClientType = createClient({ url: process.env.REDIS_URL, password: process.env.REDIS_PASSWORD});
 
     static async create() {
         WebSocketData.redisClient.on('error', err => console.log('Redis Client Error', err));
