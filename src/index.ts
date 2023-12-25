@@ -6,6 +6,7 @@ import { RedisController } from './controller/redis_controller';
 await WebSocketData.create();
 
 const server = Bun.serve<WebSocketData>({
+  hostname: '0.0.0.0',
   fetch(req, server) {
     if (server.upgrade(req, {
       data: new WebSocketData([new RedisController(server), new ChatController(server)]),
