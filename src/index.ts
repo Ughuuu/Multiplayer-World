@@ -1,15 +1,21 @@
 import { ServerWebSocket } from 'bun'
 import { ChatController } from './controller/chat_controller'
 import { WebSocketData, MessageData } from './model/websocket_data'
-import { RedisController } from './controller/redis_controller';
+import { MovementController } from './controller/movement_controller';
+import { WebsocketController } from './controller/websocket_controller';
 
-await WebSocketData.create();
+let webSocketController: WebsocketController<WebSocketData>[] = []
+const UPDATE_INTERVAL = 100
 
 const server = Bun.serve<WebSocketData>({
   hostname: '0.0.0.0',
   fetch(req, server) {
+    if (webSocketController.length === 0) {
+      webSocketController.push(new MovementController(server))
+      webSocketController.push(new ChatController(server))
+    }
     if (server.upgrade(req, {
-      data: new WebSocketData([new RedisController(server), new ChatController(server)]),
+      data: new WebSocketData(webSocketController),
     })) {
       return;
     }
@@ -59,6 +65,13 @@ const server = Bun.serve<WebSocketData>({
   },
 });
 
+setInterval(() => {
+  // wait for the object to be created
+  for (const controller of webSocketController) {
+    controller.update();
+  }
+}, UPDATE_INTERVAL);
+
 console.log(
-  `🦊 WebSocket is running at http://${server.hostname}:${server.port}`
+  `🦊 WebSocket is running at http://${server.hostname}:${server.port} at ${UPDATE_INTERVAL} update interval.`
 );

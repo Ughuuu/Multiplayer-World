@@ -1,6 +1,6 @@
 import { RedisClientType, SchemaFieldTypes } from "redis";
 import { WebsocketController } from "../controller/websocket_controller";
-import { RedisData } from "./redis_data";
+import { InMemoryData } from "./in_memory_data";
 import { createClient } from 'redis';
 
 const ALFNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -20,21 +20,9 @@ export function randomSecret(length: number) {
 
 export class WebSocketData {
     id: string = randomSecret(256)
-    redisData: RedisData = new RedisData()
+    inMemoryData: InMemoryData = new InMemoryData()
     controllers: WebsocketController<WebSocketData>[]
-    static redisClient: RedisClientType = createClient({ url: process.env.REDIS_URL, password: process.env.REDIS_PASSWORD});
 
-    static async create() {
-        WebSocketData.redisClient.on('error', err => console.log('Redis Client Error', err));
-        console.log(`🔥 Connecting to Redis at ${process.env.REDIS_URL}`);
-        await WebSocketData.redisClient.connect();
-        try {
-            await WebSocketData.redisClient.ft.create('idx:users', { 'position': { 'type': SchemaFieldTypes.GEO, 'as': 'position' } }, { ON: 'HASH', PREFIX: 'user:' });
-        } catch (err: any) {
-            // ignore
-        }
-        console.log(`🔥 Connected to Redis at ${process.env.REDIS_URL}`);
-    }
     constructor(controllers: WebsocketController<WebSocketData>[]) {
         this.controllers = controllers
     }

@@ -63,9 +63,9 @@ Since games would be played mostly on browser but also on other platforms, there
 
 Avatars can be 2d or 3d. It should ideally be character from games and could be customizable in form of look and movement.
 
-### Architecture
+## Architecture
 
-Since we need the world to be updated frequently, a Redis Cache would work best.
+Since we need the world to be updated frequently, holding everything in memory should be fastest.
 
 Then, since we either have the server function on browser or desktop, best option would be a websocket server.
 
@@ -76,15 +76,15 @@ For the larger data we will use a CDN server where we simply upload the files ne
 title: Multiplayer World
 ---
 erDiagram
-    REDIS 1+--1+ NODEJS : under_firewall
-    CDN 1+--1+ NODEJS : connection
-    REDIS {
+    IN_MEMORY 1+--1+ WEBSERVER : under_firewall
+    CDN 1+--1+ WEBSERVER : connection
+    IN_MEMORY {
         string id
         string name
         string lobby
         geo position
     }
-    NODEJS {
+    WEBSERVER {
         enum message_type
         string data
         string auth_token
@@ -93,7 +93,7 @@ erDiagram
         pck avatar
         pck menu
     }
-    GODOT 1--1+ NODEJS : websocket
+    GODOT 1--1+ WEBSERVER : websocket
 ```
 
 Since we use websockets, there will be different events needed to support the above requirements.
@@ -122,12 +122,9 @@ flowchart
 
 ## Requirements
 
-- [Redis Stack](https://redis.io/download/)
 - [Bun](https://bun.sh)
 
 ## Development
-
-Create an .env file.
 
 To start the development server run:
 ```bash
@@ -142,8 +139,6 @@ bunx wscat -c ws://localhost:3000
 
 ## Deployment
 
-I am using currently [Upstash](https://upstash.com) free instance for redis server.
-
 For the bun app I am using an [Azure Web App](https://azure.microsoft.com/en-us/products/app-service/web) set as NodeJS and then customizing it's start to run the bun binary instead.
 
-These two can both scale independently, oferring good speeds and reliability.
+

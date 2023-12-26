@@ -1,6 +1,8 @@
 import { adjectives, animals, uniqueNamesGenerator } from 'unique-names-generator'
 
 export class Vector2 {
+    static MAX_SPEED = 10;
+    static MIN_SPEED = 1e-10;
     x: number
     y: number
 
@@ -14,18 +16,11 @@ export class Vector2 {
     }
 }
 
-export class RedisData {
+export class InMemoryData {
     name: string = uniqueNamesGenerator({
         dictionaries: [adjectives, animals]
     })
     lobby: string = ''
     position: Vector2 = new Vector2()
-
-    public toJson() {
-        return {
-            name: this.name,
-            lobby: this.lobby,
-            position: `${this.position.x}, ${this.position.y}`,
-        }
-    }
+    cell: string = '0x0'
 }
