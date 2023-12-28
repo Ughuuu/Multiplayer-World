@@ -4,45 +4,44 @@ import { WebsocketController } from "./websocket_controller";
 
 class ChatMessage {
     message: string = ""
-    chatRoom: string = "global"
+    room: string = "global"
+    id: string = ""
 }
 
 const MAX_MESSAGES_KEPT = 10
 
 export class ChatController implements WebsocketController<WebSocketData> {
-    lastMessages = new Map<string, Array<string>>()
+    lastMessages = new Map<string, Array<ChatMessage>>()
     server: Server
     constructor(server: Server) {
         this.server = server
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
-        const msg = `[b]${ws.data.inMemoryData.name}[/b] has entered the chat`;
-        this.server.publish("global", JSON.stringify({ type: ReturnType.Chat, data: msg }));
+        this.server.publish("global", JSON.stringify({ type: ReturnType.Send_Join, data: ws.data.id }));
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
-        const msg = `[b]${ws.data.inMemoryData.name}[/b] has left the chat`;
-        ws.unsubscribe("global");
-        this.server.publish("global", JSON.stringify({ type: ReturnType.Chat, data: msg }));
+        this.server.publish("global", JSON.stringify({ type: ReturnType.Send_Left, data: ws.data.id }));
     }
 
 
     async message(ws: ServerWebSocket<WebSocketData>, message_data: MessageData) {
         switch (message_data.type) {
-            case MessageType.Chat_Message: {
+            case MessageType.Receive_Chat_Message: {
                 let chatMessage = message_data.data as ChatMessage
-                let msg = `[b]${ws.data.inMemoryData.name}[/b]: ${chatMessage.message}`
-                let lastMessagesInChatRoom = this.lastMessages.get(chatMessage.chatRoom)
-                // keep last 10 messages for each conversation
-                if (lastMessagesInChatRoom == undefined) {
-                    this.lastMessages.set(chatMessage.chatRoom, [])
-                    lastMessagesInChatRoom = []
-                }
-                this.lastMessages.set(chatMessage.chatRoom, [...lastMessagesInChatRoom, msg].slice(0, MAX_MESSAGES_KEPT))
-                this.server.publish(chatMessage.chatRoom, JSON.stringify({ type: ReturnType.Chat, data: {message: msg, chatRoom: chatMessage.chatRoom} }));
-            } break
+                // check if we are allowed to post in te room
+                if (chatMessage.room == 'global' ||
+                    chatMessage.room == 'lobby-' + ws.data.inMemoryData.lobby ||
+                    chatMessage.room == ws.data.inMemoryData.cell.cellString()) {
+                    // keep last 10 messages for each conversation
+                    chatMessage.id = ws.data.id
+                    this.lastMessages.set(chatMessage.room, [...(this.lastMessages.get(chatMessage.room) || []), chatMessage].slice(0, MAX_MESSAGES_KEPT))
+                    this.server.publish(chatMessage.room, JSON.stringify({ type: ReturnType.Send_Chat_Message, data: chatMessage }));
+                } break
+            }
         }
     }
 
-    async update() { }
+    async update(): Promise<void> {
+    }
 }

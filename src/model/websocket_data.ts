@@ -1,7 +1,5 @@
-import { RedisClientType, SchemaFieldTypes } from "redis";
 import { WebsocketController } from "../controller/websocket_controller";
 import { InMemoryData } from "./in_memory_data";
-import { createClient } from 'redis';
 
 const ALFNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -19,7 +17,7 @@ export function randomSecret(length: number) {
 
 
 export class WebSocketData {
-    id: string = randomSecret(256)
+    id: string = randomSecret(32)
     inMemoryData: InMemoryData = new InMemoryData()
     controllers: WebsocketController<WebSocketData>[]
 
@@ -30,26 +28,37 @@ export class WebSocketData {
 
 
 export class MessageData {
-    type: MessageType = MessageType.Movement_Position
+    type: MessageType = 0
     data: any
 }
 
 export enum MessageType {
-    Movement_Position = 0,
-    Chat_Message,
-    MatchMaking_Join,
-    MatchMaking_Id,
-    MatchMaking_PeerConnected,
-    MatchMaking_PeerDisconnected,
-    MatchMaking_Offer,
-    MatchMaking_Answer,
-    MatchMaking_Candidate,
-    MatchMaking_Seal,
+    // data: {x: number, y: number}
+    Receive_Movement_Position = 0,
+    // data: {message: string, room: string}
+    Receive_Chat_Message,
+    // data: string
+    Receive_Name,
+    Receive_MatchMaking_Join,
+    Receive_MatchMaking_Id,
+    Receive_MatchMaking_PeerConnected,
+    Receive_MatchMaking_PeerDisconnected,
+    Receive_MatchMaking_Offer,
+    Receive_MatchMaking_Answer,
+    Receive_MatchMaking_Candidate,
+    Receive_MatchMaking_Seal,
 }
 
 export enum ReturnType {
-    Initial_Info = 0,
-    Chat,
-    Positions,
-    Stats_Count,
+    // data: string
+    Send_Id = 0,
+    // data: {string: Vector2, ...}
+    Send_Movement_Diff,
+    // data: {id: string, message: string, room: string}
+    Send_Chat_Message,
+    // data: {id: string, name: string}
+    Send_Name,
+    Send_Join,
+    Send_Left,
+    Send_Stats_Count,
 }

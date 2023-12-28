@@ -134,7 +134,7 @@ bun start
 To connect from terminal a websocket, run:
 
 ```
-bunx wscat -c ws://localhost:3000
+wscat -c ws://localhost:3000
 ```
 
 ## Deployment

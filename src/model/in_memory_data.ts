@@ -14,6 +14,24 @@ export class Vector2 {
     distanceSquared(v: Vector2) {
         return (this.x - v.x) ** 2 + (this.y - v.y) ** 2
     }
+
+    cellString(): string {
+        return `cell-${this.x}x${this.y}`
+    }
+
+    getCellRooms(): Array<Vector2>{
+        return [
+            new Vector2(this.x,this.y),
+            new Vector2(this.x-1,this.y),
+            new Vector2(this.x-1,this.y-1),
+            new Vector2(this.x-1,this.y+1),
+            new Vector2(this.x+1,this.y),
+            new Vector2(this.x+1,this.y-1),
+            new Vector2(this.x+1,this.y+1),
+            new Vector2(this.x,this.y-1),
+            new Vector2(this.x,this.y+1)
+        ]
+    }
 }
 
 export class InMemoryData {
@@ -22,5 +40,5 @@ export class InMemoryData {
     })
     lobby: string = ''
     position: Vector2 = new Vector2()
-    cell: string = '0x0'
+    cell: Vector2 = new Vector2()
 }
