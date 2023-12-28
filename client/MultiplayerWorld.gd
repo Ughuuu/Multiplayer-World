@@ -10,6 +10,7 @@ class Info:
 	func _to_string():
 		return "name (%s) position %f,%f lobby %s" % [name, position.x, position.y, lobby]
 
+signal idd(id: String)
 signal moved(players: Array[Info])
 signal chated(message: String, lobby: String)
 signal stats(count: int)
@@ -62,6 +63,7 @@ func _on_open(message: Dictionary):
 				_players[other_id].name = name
 		ReturnType.Receive_Id:
 			_id = data
+			idd.emit(_id)
 		ReturnType.Receive_Leave:
 			left.emit(_players[data])
 			_players.erase(data)

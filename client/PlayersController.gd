@@ -9,6 +9,7 @@ var target_positions: Dictionary
 var active_players: Dictionary
 
 func _ready():
+	multiplayer_world.idd.connect(_idd)
 	multiplayer_world.moved.connect(_moved)
 	multiplayer_world.left.connect(_left)
 	for player_i in range(max_players):
@@ -16,6 +17,9 @@ func _ready():
 		player_nodes.push_back(player_created)
 		add_child(player_created)
 	_hide_players()
+
+func _idd(id: String):
+	current_player_node.get_parent().process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _hide_players():
 	for player_node in player_nodes:

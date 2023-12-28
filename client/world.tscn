@@ -27,6 +27,7 @@ size = Vector2(62, 1190.5)
 script = ExtResource("1_wjasi")
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+process_mode = 4
 script = ExtResource("4_c86ke")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
