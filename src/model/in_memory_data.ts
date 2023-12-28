@@ -1,7 +1,7 @@
 import { adjectives, animals, uniqueNamesGenerator } from 'unique-names-generator'
 
 export class Vector2 {
-    static MAX_SPEED = 100;
+    static MAX_SPEED = 500;
     static MIN_SPEED = 1e-10;
     x: number
     y: number
