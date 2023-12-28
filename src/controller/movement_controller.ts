@@ -48,8 +48,8 @@ export class MovementController implements WebsocketController<WebSocketData> {
                 }
                 // update position only if it's not too far
                 let newPos = new Vector2(message_data.data.x, message_data.data.y)
-                let newCell = new Vector2((newPos.x/CELL_SIZE),Math.floor(newPos.y/CELL_SIZE))
-                const distanceSquared = newPos.distanceSquared(ws.data.inMemoryData.position) 
+                let newCell = new Vector2((newPos.x / CELL_SIZE), Math.floor(newPos.y / CELL_SIZE))
+                const distanceSquared = newPos.distanceSquared(ws.data.inMemoryData.position)
                 if (distanceSquared > Vector2.MAX_SPEED * Vector2.MAX_SPEED || distanceSquared < Vector2.MIN_SPEED * Vector2.MIN_SPEED) {
                     return;
                 }
