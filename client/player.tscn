@@ -1,9 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://bnruuei4bma3q"]
+[gd_scene load_steps=3 format=3 uid="uid://bnruuei4bma3q"]
 
 [ext_resource type="Texture2D" uid="uid://coqjollnwgdxa" path="res://icon.svg" id="1_boqu3"]
+[ext_resource type="Script" path="res://Player.gd" id="2_e3jxm"]
 
 [node name="Sprite2D" type="Sprite2D"]
 texture = ExtResource("1_boqu3")
+script = ExtResource("2_e3jxm")
 
 [node name="Label" type="Label" parent="."]
 custom_minimum_size = Vector2(150, 2.08165e-12)
@@ -15,3 +17,5 @@ text = "Name"
 horizontal_alignment = 1
 vertical_alignment = 1
 uppercase = true
+
+[node name="RigidBody2D" type="RigidBody2D" parent="Label"]

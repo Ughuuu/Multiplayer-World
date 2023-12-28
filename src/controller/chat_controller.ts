@@ -5,23 +5,24 @@ import { WebsocketController } from "./websocket_controller";
 class ChatMessage {
     message: string = ""
     room: string = "global"
-    id: string = ""
 }
 
 const MAX_MESSAGES_KEPT = 10
 
 export class ChatController implements WebsocketController<WebSocketData> {
-    lastMessages = new Map<string, Array<ChatMessage>>()
     server: Server
     constructor(server: Server) {
         this.server = server
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
-        this.server.publish("global", JSON.stringify({ type: ReturnType.Send_Join, data: ws.data.id }));
+        let msg = `[b]${ws.data.inMemoryData.name}[/b]: joined.`
+        this.server.publish(ws.data.inMemoryData.cell.toString(), JSON.stringify({ type: ReturnType.Send_Chat_Message, data: { message: msg, room: "global" } }));
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
-        this.server.publish("global", JSON.stringify({ type: ReturnType.Send_Left, data: ws.data.id }));
+        let msg = `[b]${ws.data.inMemoryData.name}[/b]: left.`
+        this.server.publish(ws.data.inMemoryData.cell.toString(), JSON.stringify({ type: ReturnType.Send_Chat_Message, data: { message: msg, room: "global" } }));
+        this.server.publish(ws.data.inMemoryData.cell.toString(), JSON.stringify({ type: ReturnType.Send_Leave, data: ws.data.id }));
     }
 
 
@@ -29,13 +30,15 @@ export class ChatController implements WebsocketController<WebSocketData> {
         switch (message_data.type) {
             case MessageType.Receive_Chat_Message: {
                 let chatMessage = message_data.data as ChatMessage
-                // check if we are allowed to post in te room
+                if (chatMessage.room == 'cell') {
+                    chatMessage.room = ws.data.inMemoryData.cell.toString()
+                }
+                // check if we are allowed to post in the room
                 if (chatMessage.room == 'global' ||
                     chatMessage.room == 'lobby-' + ws.data.inMemoryData.lobby ||
-                    chatMessage.room == ws.data.inMemoryData.cell.cellString()) {
-                    // keep last 10 messages for each conversation
-                    chatMessage.id = ws.data.id
-                    this.lastMessages.set(chatMessage.room, [...(this.lastMessages.get(chatMessage.room) || []), chatMessage].slice(0, MAX_MESSAGES_KEPT))
+                    chatMessage.room == ws.data.inMemoryData.cell.toString()) {
+                    let msg = `[b]${ws.data.inMemoryData.name}[/b]: ${chatMessage.message}`
+                    chatMessage.message = msg
                     this.server.publish(chatMessage.room, JSON.stringify({ type: ReturnType.Send_Chat_Message, data: chatMessage }));
                 } break
             }

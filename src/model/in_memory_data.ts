@@ -1,7 +1,7 @@
 import { adjectives, animals, uniqueNamesGenerator } from 'unique-names-generator'
 
 export class Vector2 {
-    static MAX_SPEED = 10;
+    static MAX_SPEED = 100;
     static MIN_SPEED = 1e-10;
     x: number
     y: number
@@ -15,7 +15,7 @@ export class Vector2 {
         return (this.x - v.x) ** 2 + (this.y - v.y) ** 2
     }
 
-    cellString(): string {
+    toString(): string {
         return `cell-${this.x}x${this.y}`
     }
 

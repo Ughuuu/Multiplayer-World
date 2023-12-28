@@ -53,12 +53,12 @@ export enum ReturnType {
     // data: string
     Send_Id = 0,
     // data: {string: Vector2, ...}
-    Send_Movement_Diff,
+    Send_Movement,
     // data: {id: string, message: string, room: string}
     Send_Chat_Message,
     // data: {id: string, name: string}
     Send_Name,
-    Send_Join,
-    Send_Left,
+    // data: string
+    Send_Leave,
     Send_Stats_Count,
 }

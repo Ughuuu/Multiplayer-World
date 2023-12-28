@@ -7,14 +7,15 @@ import { StatsController } from './controller/stats_controller';
 import { NameController } from './controller/name_controller';
 
 let webSocketController: WebsocketController<WebSocketData>[] = []
-const UPDATE_INTERVAL = 64
+const UPDATE_INTERVAL = 32
 
 const server = Bun.serve<WebSocketData>({
   hostname: '0.0.0.0',
   fetch(req, server) {
     if (webSocketController.length === 0) {
-      webSocketController.push(new MovementController(server))
-      webSocketController.push(new NameController(server))
+      const nameController = new NameController(server)
+      webSocketController.push(new MovementController(server, nameController))
+      webSocketController.push(nameController)
       webSocketController.push(new StatsController(server))
       webSocketController.push(new ChatController(server))
     }
