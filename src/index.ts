@@ -7,7 +7,7 @@ import { StatsController } from './controller/stats_controller';
 import { NameController } from './controller/name_controller';
 
 let webSocketController: WebsocketController<WebSocketData>[] = []
-const UPDATE_INTERVAL = 32
+const UPDATE_INTERVAL = 50
 
 const server = Bun.serve<WebSocketData>({
   hostname: '0.0.0.0',

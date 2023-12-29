@@ -7,8 +7,6 @@ class ChatMessage {
     room: string = "global"
 }
 
-const MAX_MESSAGES_KEPT = 10
-
 export class ChatController implements WebsocketController<WebSocketData> {
     server: Server
     constructor(server: Server) {
