@@ -5,78 +5,109 @@ import { MovementController } from './controller/movement_controller';
 import { WebsocketController } from './controller/websocket_controller';
 import { StatsController } from './controller/stats_controller';
 import { NameController } from './controller/name_controller';
+import { DataController } from './controller/data_controller';
+import { Context, Elysia, t } from 'elysia';
+import { swagger } from '@elysiajs/swagger'
+import { staticPlugin } from '@elysiajs/static'
 
 let webSocketController: WebsocketController<WebSocketData>[] = []
 const UPDATE_INTERVAL = 50
 
+const dataController = new DataController(server)
+const nameController = new NameController(server)
+webSocketController.push(new MovementController(server, nameController))
+webSocketController.push(nameController)
+webSocketController.push(new StatsController(server))
+webSocketController.push(new ChatController(server, dataController))
+
+const app = new Elysia()
+    .use(staticPlugin())
+    .use(swagger())
+    .get('/api/user', () => "user")
+    .ws('/ws', {
+        body: t.Object({
+            type: t.String(),
+            data: t.Any(),
+        }),
+
+        async open(ws) {
+            ws.data.set("inMemoryData", {
+                
+            })
+        },
+        async close(ws) {
+        },
+        message(ws, message) {
+            ws.send(message)
+        }
+    })
+    .get('/', () => 'Eat your vegetables 🥦')
+    .listen(process.env.PORT ?? 3000);
+
+
+
 const server = Bun.serve<WebSocketData>({
-  hostname: '0.0.0.0',
-  fetch(req, server) {
-    if (webSocketController.length === 0) {
-      const nameController = new NameController(server)
-      webSocketController.push(new MovementController(server, nameController))
-      webSocketController.push(nameController)
-      webSocketController.push(new StatsController(server))
-      webSocketController.push(new ChatController(server))
-    }
-    if (server.upgrade(req, {
-      data: new WebSocketData(webSocketController),
-    })) {
-      return;
-    }
-    let filePath = new URL(req.url).pathname;
-    const publicFolder = "."
-    if (filePath == "/") {
-      filePath = "/index.html";
-    }
-    console.log(publicFolder + filePath)
-    let response = new Response(Bun.file(publicFolder + filePath))
-    response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
-    response.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
-    return response
-  },
-  websocket: {
-    async open(ws: ServerWebSocket<WebSocketData>) {
-      try {
-        for (const controller of ws.data.controllers) {
-          await controller.open(ws);
+    fetch(req, server) {
+        if (webSocketController.length === 0) {
         }
-      } catch (err: any) {
-        ws.sendText(JSON.stringify({ error: err.message }));
-      }
+        if (server.upgrade(req, {
+            data: new WebSocketData(webSocketController),
+        })) {
+            return;
+        }
+        let filePath = new URL(req.url).pathname;
+        const publicFolder = "."
+        if (filePath == "/") {
+            filePath = "/index.html";
+        }
+        console.log(publicFolder + filePath)
+        let response = new Response(Bun.file(publicFolder + filePath))
+        response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
+        response.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
+        return response
     },
-    async message(ws: ServerWebSocket<WebSocketData>, message) {
-      try {
-        for (const controller of ws.data.controllers) {
-          if (typeof (message) !== 'string') {
-            throw new Error('Invalid message type');
-          }
-          let message_data = JSON.parse(message.toString()) as MessageData;
-          await controller.message(ws, message_data);
+    websocket: {
+        async open(ws: ServerWebSocket<WebSocketData>) {
+            try {
+                for (const controller of ws.data.controllers) {
+                    await controller.open(ws);
+                }
+            } catch (err: any) {
+                ws.sendText(JSON.stringify({ error: err.message }));
+            }
+        },
+        async message(ws: ServerWebSocket<WebSocketData>, message) {
+            try {
+                for (const controller of ws.data.controllers) {
+                    if (typeof (message) !== 'string') {
+                        throw new Error('Invalid message type');
+                    }
+                    let message_data = JSON.parse(message.toString()) as MessageData;
+                    await controller.message(ws, message_data);
+                }
+            } catch (err: any) {
+                ws.sendText(JSON.stringify({ error: err.message }));
+            }
+        },
+        async close(ws: ServerWebSocket<WebSocketData>, code: number, reason: string) {
+            try {
+                for (const controller of ws.data.controllers) {
+                    await controller.close(ws);
+                }
+            } catch (err: any) {
+                ws.sendText(JSON.stringify({ error: err.message }));
+            }
         }
-      } catch (err: any) {
-        ws.sendText(JSON.stringify({ error: err.message }));
-      }
     },
-    async close(ws: ServerWebSocket<WebSocketData>, code: number, reason: string) {
-      try {
-        for (const controller of ws.data.controllers) {
-          await controller.close(ws);
-        }
-      } catch (err: any) {
-        ws.sendText(JSON.stringify({ error: err.message }));
-      }
-    }
-  },
 });
 
 setInterval(() => {
-  // wait for the object to be created
-  for (const controller of webSocketController) {
-    controller.update();
-  }
+    // wait for the object to be created
+    for (const controller of webSocketController) {
+        controller.update();
+    }
 }, UPDATE_INTERVAL);
 
 console.log(
-  `🦊 WebSocket is running at http://${server.hostname}:${server.port} at ${UPDATE_INTERVAL} update interval.`
+    `🦊 WebSocket is running at http://${app.server?.hostname}:${app.server?.port} at ${UPDATE_INTERVAL} update interval.`
 );

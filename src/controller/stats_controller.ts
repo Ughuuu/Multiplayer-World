@@ -8,15 +8,6 @@ export class StatsController implements WebsocketController<WebSocketData> {
     constructor(server: Server) {
         this.server = server
     }
-    async open(ws: ServerWebSocket<WebSocketData>) {
-        this.count++
-        this.sendInfo()
-    }
-
-    async close(ws: ServerWebSocket<WebSocketData>) {
-        this.count--
-        this.sendInfo()
-    }
 
     sendInfo() {
         this.server.publish("global", JSON.stringify({ type: ReturnType.Send_Stats_Count, data: this.count }));

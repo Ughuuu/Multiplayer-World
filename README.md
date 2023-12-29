@@ -5,13 +5,20 @@
 I always find myself making multiple **minigames**. So I wanted to build a sort of an environment where people can:
 
 - move
-- chat
+- text chat
+- voice chat
 - talk
 - play
 
 I also wanted to have some common things for the games:
-- common menu
+- leaderboards
+- friends
+- relay
+- lobby
 - matchmaking
+- multiplayer hosting
+- multiplayer peer to peer
+- common menu
 - avatars
 
 ### 1. Movement
@@ -76,13 +83,13 @@ For the larger data we will use a CDN server where we simply upload the files ne
 title: Multiplayer World
 ---
 erDiagram
-    IN_MEMORY 1+--1+ WEBSERVER : under_firewall
+    IN_MEMORY_USER 1+--1+ WEBSERVER : under_firewall
     CDN 1+--1+ WEBSERVER : connection
-    IN_MEMORY {
+    IN_MEMORY_USER {
         string id
+        Vector2 position
         string name
         string lobby
-        geo position
     }
     WEBSERVER {
         enum message_type

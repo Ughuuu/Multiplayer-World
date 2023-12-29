@@ -4,11 +4,8 @@ import { WebsocketController } from "./websocket_controller";
 import { Vector2 } from "../model/in_memory_data";
 import { NameController } from "./name_controller";
 
-const CELL_SIZE = 1.0/1000;
-
 export class MovementController implements WebsocketController<WebSocketData> {
     lastPositions = new Map<string, Map<string, Vector2>>()
-    cellPositions = new Map<string, Map<string, Vector2>>()
     server: Server
     nameController: NameController
     constructor(server: Server, nameController: NameController) {
@@ -24,7 +21,6 @@ export class MovementController implements WebsocketController<WebSocketData> {
         this.sendCellData(ws, cell)
         // update cell and last positions
         this.lastPositions.set(cell.toString(), (this.lastPositions.get(cell.toString()) || new Map<string, Vector2>()).set(ws.data.id, ws.data.inMemoryData.position));
-        this.cellPositions.set(cell.toString(), (this.cellPositions.get(cell.toString()) || new Map<string, Vector2>()).set(ws.data.id, ws.data.inMemoryData.position));
     }
 
     sendCellData(ws: ServerWebSocket<WebSocketData>, oldCell: Vector2) {
