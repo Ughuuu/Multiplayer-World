@@ -1,4 +1,4 @@
-import { MessageType, ReturnType } from "./model/websocket_data";
+import { MessageType, ReturnType } from "./model";
 
 const maxSockets = 100
 //const url = 'ws://0.0.0.0:3000'

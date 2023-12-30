@@ -1,113 +1,20 @@
-import { ServerWebSocket } from 'bun'
-import { ChatController } from './controller/chat_controller'
-import { WebSocketData, MessageData } from './model/websocket_data'
-import { MovementController } from './controller/movement_controller';
-import { WebsocketController } from './controller/websocket_controller';
-import { StatsController } from './controller/stats_controller';
-import { NameController } from './controller/name_controller';
-import { DataController } from './controller/data_controller';
-import { Context, Elysia, t } from 'elysia';
-import { swagger } from '@elysiajs/swagger'
-import { staticPlugin } from '@elysiajs/static'
+import { WebSocketData } from './model'
+import { RoutesHandler } from './routes_handler'
+import { WebSocketRoute } from './websocket_route'
 
-let webSocketController: WebsocketController<WebSocketData>[] = []
-const UPDATE_INTERVAL = 50
-
-const dataController = new DataController(server)
-const nameController = new NameController(server)
-webSocketController.push(new MovementController(server, nameController))
-webSocketController.push(nameController)
-webSocketController.push(new StatsController(server))
-webSocketController.push(new ChatController(server, dataController))
-
-const app = new Elysia()
-    .use(staticPlugin())
-    .use(swagger())
-    .get('/api/user', () => "user")
-    .ws('/ws', {
-        body: t.Object({
-            type: t.String(),
-            data: t.Any(),
-        }),
-
-        async open(ws) {
-            ws.data.set("inMemoryData", {
-                
-            })
-        },
-        async close(ws) {
-        },
-        message(ws, message) {
-            ws.send(message)
-        }
-    })
-    .get('/', () => 'Eat your vegetables 🥦')
-    .listen(process.env.PORT ?? 3000);
-
-
+const websocketHandler = new WebSocketRoute()
+const routesHandler = new RoutesHandler()
 
 const server = Bun.serve<WebSocketData>({
     fetch(req, server) {
-        if (webSocketController.length === 0) {
-        }
-        if (server.upgrade(req, {
-            data: new WebSocketData(webSocketController),
-        })) {
+        if (websocketHandler.fetch(req, server)) {
             return;
         }
-        let filePath = new URL(req.url).pathname;
-        const publicFolder = "."
-        if (filePath == "/") {
-            filePath = "/index.html";
-        }
-        console.log(publicFolder + filePath)
-        let response = new Response(Bun.file(publicFolder + filePath))
-        response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
-        response.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
-        return response
+        return routesHandler.fetch(req, server)
     },
-    websocket: {
-        async open(ws: ServerWebSocket<WebSocketData>) {
-            try {
-                for (const controller of ws.data.controllers) {
-                    await controller.open(ws);
-                }
-            } catch (err: any) {
-                ws.sendText(JSON.stringify({ error: err.message }));
-            }
-        },
-        async message(ws: ServerWebSocket<WebSocketData>, message) {
-            try {
-                for (const controller of ws.data.controllers) {
-                    if (typeof (message) !== 'string') {
-                        throw new Error('Invalid message type');
-                    }
-                    let message_data = JSON.parse(message.toString()) as MessageData;
-                    await controller.message(ws, message_data);
-                }
-            } catch (err: any) {
-                ws.sendText(JSON.stringify({ error: err.message }));
-            }
-        },
-        async close(ws: ServerWebSocket<WebSocketData>, code: number, reason: string) {
-            try {
-                for (const controller of ws.data.controllers) {
-                    await controller.close(ws);
-                }
-            } catch (err: any) {
-                ws.sendText(JSON.stringify({ error: err.message }));
-            }
-        }
-    },
+    websocket: websocketHandler
 });
 
-setInterval(() => {
-    // wait for the object to be created
-    for (const controller of webSocketController) {
-        controller.update();
-    }
-}, UPDATE_INTERVAL);
-
 console.log(
-    `🦊 WebSocket is running at http://${app.server?.hostname}:${app.server?.port} at ${UPDATE_INTERVAL} update interval.`
+    `🦊 WebSocket is running at http://${server.hostname}:${server.port}`
 );

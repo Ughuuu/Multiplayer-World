@@ -1,5 +1,5 @@
 import { ServerWebSocket } from "bun";
-import { MessageData } from "../model/websocket_data";
+import { MessageData } from "../model";
 
 export interface WebsocketController<T>{
     open(ws: ServerWebSocket<T>): Promise<void>;

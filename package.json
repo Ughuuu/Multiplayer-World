@@ -13,9 +13,6 @@
   },
   "module": "src/index.js",
   "dependencies": {
-    "@elysiajs/static": "^0.8.1",
-    "@elysiajs/swagger": "^0.8.0",
-    "elysia": "^0.8.6",
     "redis": "^4.6.12",
     "unique-names-generator": "^4.7.1"
   }
