@@ -31,7 +31,7 @@ It also needs to be efficient when it comes to **geo querying** the positon so i
 
 There need to be multiple channels for chats:
 - team chat
-- global chat
+- room chat
 - proximity chat
 
 ### 3. Talk
@@ -72,36 +72,73 @@ Avatars can be 2d or 3d. It should ideally be character from games and could be 
 
 ## Architecture
 
-Since we need the world to be updated frequently, holding everything in memory should be fastest.
+We would want to handle multiple users and scale (ideally infinitely). Every client would be a godot instance that connects through websocket to a webserver through a loadbalancer.
 
-Then, since we either have the server function on browser or desktop, best option would be a websocket server.
-
-For the larger data we will use a CDN server where we simply upload the files needed in game to display(eg. menus, avatars, etc.)
 
 ```mermaid
 ---
-title: Multiplayer World
+title: Multiplayer World - API
 ---
 erDiagram
-    IN_MEMORY_USER 1+--1+ WEBSERVER : under_firewall
-    CDN 1+--1+ WEBSERVER : connection
-    IN_MEMORY_USER {
-        string id
-        Vector2 position
-        string name
-        string lobby
-    }
-    WEBSERVER {
+    
+    LOAD_BALANCER 1--1+ WEBSERVER_2 : private
+    LOAD_BALANCER 1--1+ WEBSERVER_1 : private
+    GODOT 1--1+ LOAD_BALANCER : public
+```
+
+In order to synchronize the sebservers, we could use a redis instance that holds all data in memory, providing us the fastest data write and read possible.
+
+```mermaid
+---
+title: Multiplayer World - Redis
+---
+erDiagram
+    WEBSERVER_1 {
         enum message_type
-        string data
+        string id
+        string name
+        string position
         string auth_token
     }
-    CDN {
-        pck avatar
-        pck menu
+    WEBSERVER_2 {
+        enum message_type
+        string id
+        string name
+        string position
+        string auth_token
     }
-    GODOT 1--1+ WEBSERVER : websocket
+    
+    WEBSERVER_1 1--1+ REDIS : read_updates_50ms
+    WEBSERVER_1 1--1+ REDIS : write
+    WEBSERVER_2 1--1+ REDIS : read_updates_50ms
+    WEBSERVER_2 1--1+ REDIS : write
 ```
+
+
+For reading data, we need to structure it somehow in such that:
+- it's fast
+- there are no race conditions
+- we can get all data at once (eg when the client first connects)
+- we can get only updates data (eg when there are small updates, but not sending all data)
+- sharding/splitting the data somehow supported also
+
+There will be 2 use cases, when the player first joins, we want to be able to give him all data that he is interested in, and then when events happen, only the events he is interested in.
+
+We will so split the world into multiple cells:
+
+```
+```mermaid
+---
+title: Multiplayer World - Cell Splitting
+---
+erDiagram
+    CELL_0x0 ----> CELL_0x1 : a
+```
+```
+
+
+For the larger data we will use a CDN server where we simply upload the files needed in game to display(eg. menus, avatars, etc.)
+
 
 Since we use websockets, there will be different events needed to support the above requirements.
 
