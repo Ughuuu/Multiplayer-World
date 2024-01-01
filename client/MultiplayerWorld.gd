@@ -17,7 +17,7 @@ var _socket = WebSocketPeer.new()
 var _id : String
 var _players : Dictionary
 
-@export var url := "wss://world.appsinacup.com"
+@export var url := "wss://world.appsinacup.com/ws"
 @export var debug := true
 
 func _ready():

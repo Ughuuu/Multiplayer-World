@@ -10,15 +10,18 @@ export class WebSocketRoute implements WebSocketHandler<WebSocketData>{
     }
     // handle websocket upgrade
     async fetch(req: Request, server: Server) {
+        if (new URL(req.url).pathname !== "/ws") {
+            return false;
+        }
         if (this.websocketControllers.length === 0) {
             await this.createControllers(server)
         }
         if (server.upgrade(req, {
             data: new WebSocketData(this.websocketControllers),
         })) {
-            return false;
+            return true;
         }
-        return true
+        return false
     }
     async message(ws: ServerWebSocket<WebSocketData>, message: string) {
         for (const controller of this.websocketControllers) {
