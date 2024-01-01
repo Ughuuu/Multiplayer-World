@@ -11,11 +11,15 @@ export class RoomController implements WebsocketController<WebSocketData>, CellL
     }
     async onCellUpdated(ws: ServerWebSocket<WebSocketData>, newCell: Vector3) {
         await this.dataController.removeData(ws, "room")
-        await this.dataController.writeCellData(ws, "room", ws.data.inMemoryData.room, true)
+        if (ws.data.inMemoryData.room) {
+            await this.dataController.writeCellData(newCell, ws.data.id, "room", ws.data.inMemoryData.room, true)
+        }
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
         ws.subscribe(`room-${ws.data.inMemoryData.room}`)
-        this.dataController.writeCellData(ws, "room", ws.data.inMemoryData.room, true)
+        if (ws.data.inMemoryData.room) {
+            await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "room", ws.data.inMemoryData.room, true)
+        }
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
@@ -30,7 +34,7 @@ export class RoomController implements WebsocketController<WebSocketData>, CellL
                     ws.unsubscribe(`room-${ws.data.inMemoryData.room}`)
                     ws.subscribe(`room-${message_data.data}`)
                     ws.data.inMemoryData.room = message_data.data
-                    this.dataController.writeCellData(ws, "room", ws.data.inMemoryData.room, true)
+                    this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "room", ws.data.inMemoryData.room, true)
                 }
             } break
         }

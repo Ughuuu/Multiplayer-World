@@ -4,37 +4,19 @@ extends Node
 class Info:
 	var id: String
 	var name: String
-	var position: Vector2
+	var position: Vector3
 	var lobby: String
-	
-	func _to_string():
-		return "name (%s) position %f,%f lobby %s" % [name, position.x, position.y, lobby]
 
-signal idd(id: String)
-signal moved(players: Array[Info])
-signal chated(message: String, lobby: String)
+signal started()
+signal moved(player: Info)
+signal chated(message: String)
 signal stats(count: int)
 signal left(player: Info)
-signal received(type: ReturnType, data: String)
 
 var _socket = WebSocketPeer.new()
 var _id : String
 var _players : Dictionary
 
-enum ReturnType {
-	Receive_Id = 0,
-	Receive_Movement,
-	Receive_Chat_Message,
-	Receive_Name,
-	Receive_Leave,
-	Receive_Stats_Count,
-}
-
-enum MessageType {
-	Send_Movement_Position = 0,
-	Send_Chat_Message,
-	Send_Name,
-}
 @export var url := "wss://world.appsinacup.com"
 @export var debug := true
 
@@ -43,66 +25,65 @@ func _ready():
 	if err != OK:
 		OS.alert("Cannot connect to server", "Error")
 		
-	if debug:
-		received.connect(func (type, message): print("DEBUG: ", type, " ", message))
-
 func _on_open(message: Dictionary):
-	if !message.has("type"):
-		printerr(message)
-		return
-	var message_type : MessageType = message["type"]
-	var data = message["data"]
-	received.emit(message_type, data)
-	match message_type:
-		ReturnType.Receive_Name:
-			for other_id in data:
-				var name = data[other_id]
-				if !_players.has(other_id):
-					_players[other_id] = Info.new()
-				_players[other_id].id = other_id
-				_players[other_id].name = name
-		ReturnType.Receive_Id:
-			_id = data
-			idd.emit(_id)
-		ReturnType.Receive_Leave:
-			left.emit(_players[data])
-			_players.erase(data)
-		ReturnType.Receive_Movement:
-			var other_players : Array[Info] = []
-			for other_id in data:
-				var other_position = data[other_id]
-				if !_players.has(other_id):
-					_players[other_id] = Info.new()
-					_players[other_id].id = other_id
-				var other_player :Info = _players[other_id]
-				# if player is found, add him to updated list
-				if other_player:
-					other_player.position = Vector2(other_position["x"], other_position["y"])
-					other_players.push_back(other_player)
-			moved.emit(other_players)
-		ReturnType.Receive_Chat_Message:
-			chated.emit(data["message"], data["room"])
-		ReturnType.Receive_Stats_Count:
-			stats.emit(int(data))
-		_:
-			printerr("Unknown type. %s" % message_type)
+	for id in message:
+		var info: Info
+		if !_players.has(id):
+			info = Info.new()
+			_players[id] = info
+			info.id = id
+		else:
+			info = _players[id]
+		var properties: Dictionary = message[id]
+		# Start event contains just the id of the user
+		if properties.size() == 0:
+			_id = id
+			started.emit()
+			print("started")
+		print(properties)
+		for property in properties:
+			match property:
+				"position":
+					var position_array: Array = JSON.parse_string(properties[property])
+					info.position = Vector3(position_array[0], position_array[1], position_array[2])
+					moved.emit(info)
+				"chat":
+					chated.emit(properties[property] as String)
+				"name":
+					info.name = properties[property] as String
+				"left":
+					_players.erase(id)
+					left.emit(info)
 
-func move(position: Vector2):
+func move(position: Vector3):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": MessageType.Send_Movement_Position,
+		"type": "position",
+		"data": {
+			"x": position.x,
+			"y": position.y,
+			"z": position.z
+		},
+	}))
+
+
+func move2(position: Vector2):
+	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+	_socket.send_text(JSON.stringify({
+		"type": "position",
 		"data": {
 			"x": position.x,
 			"y": position.y
 		},
 	}))
 
-func chat(message: String, room: String = "global"):
+func chat(message: String, room: String = "current_cell"):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": MessageType.Send_Chat_Message,
+		"type": "chat",
 		"data": {
 			"message": message,
 			"room": room
@@ -113,7 +94,7 @@ func rename(name: String):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": MessageType.Send_Name,
+		"type": "name",
 		"data": name,
 	}))
 
@@ -133,6 +114,5 @@ func _process(delta):
 	elif state == WebSocketPeer.STATE_CLOSED:
 		var code = _socket.get_close_code()
 		var reason = _socket.get_close_reason()
+		await get_tree().create_timer(1).timeout
 		get_tree().reload_current_scene()
-		#OS.alert("WebSocket closed with code: %d, reason %s. Clean: %s" % [code, reason, code != -1], "Error")
-		set_process(false) # Stop processing.

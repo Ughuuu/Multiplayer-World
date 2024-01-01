@@ -9,9 +9,9 @@ export class WebSocketRoute implements WebSocketHandler<WebSocketData>{
     constructor() {
     }
     // handle websocket upgrade
-    fetch(req: Request, server: Server) {
+    async fetch(req: Request, server: Server) {
         if (this.websocketControllers.length === 0) {
-            this.createControllers(server)
+            await this.createControllers(server)
         }
         if (server.upgrade(req, {
             data: new WebSocketData(this.websocketControllers),
@@ -22,13 +22,14 @@ export class WebSocketRoute implements WebSocketHandler<WebSocketData>{
     }
     async message(ws: ServerWebSocket<WebSocketData>, message: string) {
         for (const controller of this.websocketControllers) {
+            // execute messages async
             controller.message(ws, JSON.parse(message) as MessageData)
         }
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
         ws.subscribe("global");
         for (const controller of this.websocketControllers) {
-            controller.open(ws)
+            await controller.open(ws)
         }
     }
     async close(ws: ServerWebSocket<WebSocketData>, code: number, reason: string) {
@@ -38,8 +39,9 @@ export class WebSocketRoute implements WebSocketHandler<WebSocketData>{
         }
     }
 
-    createControllers(server: Server) {
+    async createControllers(server: Server) {
         const dataController = new DataController(server)
+        await dataController.connect()
         const nameController = new NameController(dataController)
         const chatController = new ChatController(dataController)
         const roomController = new RoomController(dataController)

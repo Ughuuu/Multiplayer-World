@@ -1,4 +1,4 @@
-import { MessageType, ReturnType } from "./model";
+import { MessageType } from "./model";
 
 const maxSockets = 100
 //const url = 'ws://0.0.0.0:3000'
@@ -26,6 +26,7 @@ function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[])
 
     socket.addEventListener('message', (event) => {
         let dataReturn = JSON.parse(event.data)
+        /*
         let messageType = dataReturn["type"] as ReturnType
         switch (messageType) {
             case ReturnType.Send_Chat_Message: {
@@ -34,7 +35,7 @@ function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[])
             case ReturnType.Send_Movement: {
                 moveReceived++
             }break
-        }
+        }*/
     });
     return socket
 }
@@ -71,6 +72,9 @@ console.log("")
 function sendPosition(sockets: WebSocket[]) {
     moveReceived = 0
     for (const socket of sockets) {
+        if (socket.readyState !== WebSocket.OPEN) {
+            throw new Error('Timed out waiting for socket to open');
+        }
         socket.send(JSON.stringify({ type: MessageType.Receive_Movement_Position, data: {x: Math.random(), y: Math.random()} }))
     }
 }

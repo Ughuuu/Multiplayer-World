@@ -25,9 +25,9 @@ size = Vector2(62, 1190.5)
 
 [node name="MultiplayerWorld" type="Node" parent="."]
 script = ExtResource("1_wjasi")
+url = "ws://localhost:3000"
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-process_mode = 4
 script = ExtResource("4_c86ke")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
@@ -58,7 +58,7 @@ current_player_node = NodePath("../CharacterBody2D/Sprite2D")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="MarginContainer" type="Window" parent="CanvasLayer" node_paths=PackedStringArray("multiplayer_world", "line_edit", "global_label", "cell_label", "stats_label", "tab_container")]
+[node name="MarginContainer" type="Window" parent="CanvasLayer" node_paths=PackedStringArray("multiplayer_world", "line_edit", "proximity_label", "team_label", "stats_label", "tab_container")]
 title = "Chat"
 position = Vector2i(0, 36)
 size = Vector2i(490, 280)
@@ -66,8 +66,8 @@ theme = SubResource("Theme_ftuyb")
 script = ExtResource("2_b7gn2")
 multiplayer_world = NodePath("../../MultiplayerWorld")
 line_edit = NodePath("VBoxContainer/LineEdit")
-global_label = NodePath("VBoxContainer/TabContainer/Global/RichTextLabel")
-cell_label = NodePath("VBoxContainer/TabContainer/Proximity/RichTextLabel")
+proximity_label = NodePath("VBoxContainer/TabContainer/Proximity/RichTextLabel")
+team_label = NodePath("VBoxContainer/TabContainer/Team/RichTextLabel")
 stats_label = NodePath("VBoxContainer/Label")
 tab_container = NodePath("VBoxContainer/TabContainer")
 
@@ -87,27 +87,26 @@ layout_mode = 2
 size_flags_vertical = 3
 drag_to_rearrange_enabled = true
 
-[node name="Global" type="Control" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer"]
+[node name="Proximity" type="Control" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer"]
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer/Global"]
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer/Proximity"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_vertical = 4
 focus_mode = 2
 bbcode_enabled = true
 scroll_following = true
 selection_enabled = true
 
-[node name="Proximity" type="Control" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer"]
+[node name="Team" type="Control" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer/Proximity"]
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/VBoxContainer/TabContainer/Team"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

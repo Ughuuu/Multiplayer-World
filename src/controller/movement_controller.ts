@@ -15,7 +15,7 @@ export class MovementController implements WebsocketController<WebSocketData> {
         this.cellListener = cellListener
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
-        await this.dataController.writeCellData(ws, "position", ws.data.inMemoryData.position, true)
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "position", ws.data.inMemoryData.position.toString(), true)
         this.subscribeToCell(ws, ws.data.inMemoryData.position)
     }
 
@@ -56,13 +56,14 @@ export class MovementController implements WebsocketController<WebSocketData> {
                 if (distanceSquared > Vector3.MAX_SPEED * Vector3.MAX_SPEED || distanceSquared < Vector3.MIN_SPEED * Vector3.MIN_SPEED) {
                     return;
                 }
-                this.dataController.writeCellData(ws, "position", newPos, true)
                 // update cell if needed
                 if (newPos.toCellString() != ws.data.inMemoryData.position.toCellString()) {
+                    this.dataController.removeData(ws, "position")
                     this.updateCell(ws, newPos)
                 }
                 // update in memory position
                 ws.data.inMemoryData.position = newPos
+                this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "position", newPos.toString(), true)
             } break
         }
     }

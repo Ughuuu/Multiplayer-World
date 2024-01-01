@@ -21,16 +21,16 @@ export class Vector3 {
     }
 
     toString(): string {
-        return `${this.x},${this.y},${this.z}`
+        return `[${this.x},${this.y},${this.z}]`
     }
 
     toCellString(): string {
         if (this.cell_x === undefined) {
             this.cell_x = Math.floor(this.x * Vector3.CELL_SIZE)
-            this.cell_y = Math.floor(this.x * Vector3.CELL_SIZE)
-            this.cell_z = Math.floor(this.x * Vector3.CELL_SIZE)
+            this.cell_y = Math.floor(this.y * Vector3.CELL_SIZE)
+            this.cell_z = Math.floor(this.z * Vector3.CELL_SIZE)
         }
-        return `${this.cell_x},${this.cell_y},${this.cell_z}`
+        return `${this.cell_x}:${this.cell_y}:${this.cell_z}`
     }
 
     getCellRooms(): Array<Vector3> {
@@ -40,8 +40,8 @@ export class Vector3 {
             this.cell_y === undefined ||
             this.cell_z === undefined) {
             this.cell_x = Math.floor(this.x * Vector3.CELL_SIZE)
-            this.cell_y = Math.floor(this.x * Vector3.CELL_SIZE)
-            this.cell_z = Math.floor(this.x * Vector3.CELL_SIZE)
+            this.cell_y = Math.floor(this.y * Vector3.CELL_SIZE)
+            this.cell_z = Math.floor(this.z * Vector3.CELL_SIZE)
         }
         for (let dx = -1; dx <= 1; dx++) {
             for (let dy = -1; dy <= 1; dy++) {

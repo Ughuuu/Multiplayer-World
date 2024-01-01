@@ -76,93 +76,75 @@ We would want to handle multiple users and scale (ideally infinitely). Every cli
 
 
 ```mermaid
----
-title: Multiplayer World - API
----
-erDiagram
-    
-    LOAD_BALANCER 1--1+ WEBSERVER_2 : private
-    LOAD_BALANCER 1--1+ WEBSERVER_1 : private
-    GODOT 1--1+ LOAD_BALANCER : public
+graph TD
+    Godot --> LoadBalancer
+    LoadBalancer --> WebServer1
+    LoadBalancer --> WebServer2
 ```
 
 In order to synchronize the sebservers, we could use a redis instance that holds all data in memory, providing us the fastest data write and read possible.
 
 ```mermaid
----
-title: Multiplayer World - Redis
----
-erDiagram
-    WEBSERVER_1 {
-        enum message_type
-        string id
-        string name
-        string position
-        string auth_token
-    }
-    WEBSERVER_2 {
-        enum message_type
-        string id
-        string name
-        string position
-        string auth_token
-    }
-    
-    WEBSERVER_1 1--1+ REDIS : read_updates_50ms
-    WEBSERVER_1 1--1+ REDIS : write
-    WEBSERVER_2 1--1+ REDIS : read_updates_50ms
-    WEBSERVER_2 1--1+ REDIS : write
+graph TD
+    WebServerReader -->|read 50ms| Redis
+    WebServerWriter -->|write| Redis
 ```
 
 
-For reading data, we need to structure it somehow in such that:
+For reading data, we don't need to send updates whenever a read happens. We could batch them and only send every 50ms.
+
+We also need to structure it somehow in such that:
 - it's fast
 - there are no race conditions
 - we can get all data at once (eg when the client first connects)
 - we can get only updates data (eg when there are small updates, but not sending all data)
 - sharding/splitting the data somehow supported also
 
-There will be 2 use cases, when the player first joins, we want to be able to give him all data that he is interested in, and then when events happen, only the events he is interested in.
+|      |      |      |
+| ---- | ---- | ---- |
+| -1x1 | 0x1  | 1x1  |
+| -1x0 | 0x0  | 1x0  |
+| -1x-1| 0x-1 | 1x-1 |
 
-We will so split the world into multiple cells:
+Each cel would have a range it would cover, so taking a position, eg 123x200, and assuming cell size is 100, it would be in cell 1x2.
+
+In redis, we could write the data as hash like this:
+
+
+- Hash Name: `cell:0:0:0`
+- Hash Data: `property:id -> value`
+
+We have encoded the cell in the has name, in this case cell 0x0x0. The property and id is encoded in the key.
+
+eg.
 
 ```
-```mermaid
----
-title: Multiplayer World - Cell Splitting
----
-erDiagram
-    CELL_0x0 ----> CELL_0x1 : a
-```
+name,38 -> useless_albatros
+position,38 -> 0,0,0
 ```
 
+For events, we could use a redis stream that is structured like this:
+
+- Stream Name: `cell:last:0:0:0`
+- Stream Values:
+    - `id:123`
+    - `property:<property>`
+    - `value:<value>`
+
+eg.
+
+```
+id: 50
+property: left
+
+id: 58
+property: chat
+value: [b]unchanged_hyena[/b]: left.
+```
+
+For id generation we could use redis increment to be sure of uniqueness.
 
 For the larger data we will use a CDN server where we simply upload the files needed in game to display(eg. menus, avatars, etc.)
-
-
-Since we use websockets, there will be different events needed to support the above requirements.
-
-We focus below on chat, movement and matchmaking.
-
-```mermaid
----
-title: Flows
----
-flowchart
-    Initial_Info --> Send_Position --> Get_Positions
-    Initial_Info --> Send_Chat
-    Initial_Info --> Change_Name
-```
-
-```mermaid
----
-title: Events
----
-flowchart
-    On_Chat_Sent --> Get_Chat
-    On_User_Join --> Get_Stats
-    On_User_Leave --> Get_Stats
-```
 
 ## Requirements
 
