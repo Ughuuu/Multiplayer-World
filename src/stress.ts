@@ -1,36 +1,17 @@
 import { MessageType } from "./model";
 
-const maxSockets = 100
-const url = 'ws://0.0.0.0:3000/ws'
-//const url = 'wss://world.appsinacup.com/ws'
+const maxSockets = 50
+//const url = 'ws://0.0.0.0:6000/ws'
+const url = 'wss://world.appsinacup.com/ws'
 const maxRetries = 200
-const iterationTimes = 100
 let connecting = true
-let chatReceived = 0
-let moveReceived = 0
+
+let probability = 0.5
 
 
 function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[]) {
     let socket = new WebSocket(url);
     socketArray[idx] = socket
-    socket.addEventListener('close', () => {
-        if (connecting) {
-            process.stdout.write('r')
-            socketArray[idx] = connectToServer(url, idx, socketArray)
-        } else {
-            throw new Error('Timed out waiting for socket to open');
-        }
-    });
-    socket.addEventListener('open', () => {
-    });
-
-    socket.addEventListener('message', (event) => {
-        let dataReturn = JSON.parse(event.data)
-        console.log(dataReturn)
-        for (const id of dataReturn) {
-            console.log(id)
-        }
-    });
     return socket
 }
 
@@ -64,81 +45,47 @@ console.log("")
 
 
 function sendPosition(sockets: WebSocket[]) {
-    moveReceived = 0
+    let iterations = 0
     for (const socket of sockets) {
+        if (Math.random() > probability) {
+            continue
+        }
+        iterations++
         if (socket.readyState !== WebSocket.OPEN) {
             throw new Error('Timed out waiting for socket to open');
         }
         socket.send(JSON.stringify({ type: MessageType.Receive_Movement_Position, data: {x: Math.random(), y: Math.random()} }))
     }
+    return iterations
 }
 function sendChat(sockets: WebSocket[]) {
-    chatReceived = 0
+    let iterations = 0
     for (const socket of sockets) {
-        socket.send(JSON.stringify({ type: MessageType.Receive_Chat_Message, data: {message: "testMe" + Math.random(), room: "global"} }))
-    }
-}
-
-async function validateChat() {
-    let start = performance.now()
-    sendChat(socketArray)
-    let maxValidationRetries = maxRetries
-    while (maxValidationRetries >= 0) {
-        maxValidationRetries--
-        if (chatReceived >= maxSockets * maxSockets) {
-            break
+        if (Math.random() > probability) {
+            continue
         }
-        await new Promise(resolve => setTimeout(resolve, 1));
-    }
-    return performance.now() - start
-}
-
-async function validateMove() {
-    sendPosition(socketArray)
-    let start = performance.now()
-    let maxValidationRetries = maxRetries
-    while (maxValidationRetries >= 0) {
-        maxValidationRetries--
-        if (moveReceived >= maxSockets) {
-            break
+        iterations++
+        if (socket.readyState !== WebSocket.OPEN) {
+            throw new Error('Timed out waiting for socket to open');
         }
-        await new Promise(resolve => setTimeout(resolve, 5));
+        socket.send(JSON.stringify({ type: MessageType.Receive_Chat_Message, data: {message: "testMe" + Math.random(), room: "current_cell"} }))
     }
-    return performance.now() - start
+    return iterations
 }
 
 await waitForSockets(socketArray)
 connecting = false
-let chatDelayTotal = 0
-let moveDelayTotal = 0
-let chatDelayMax = 0
-let chatDelayMin = Infinity
-let moveDelayMax = 0
-let moveDelayMin = Infinity
-for (let i = 0; i < iterationTimes; i++) {
-    const moveDelay = await validateMove()
-    moveDelayTotal += moveDelay
-    moveDelayMax = Math.max(moveDelay, moveDelayMax)
-    moveDelayMin = Math.min(moveDelay, moveDelayMin)
-    console.log(`MoveDelay ${moveDelay} ms`)
-}
-// Skip chat perf for now
-/*
-for (let i = 0; i < iterationTimes; i++) {
-    const chatDelay = await validateChat()
-    chatDelayTotal += chatDelay
-    chatDelayMax = Math.max(chatDelay, chatDelayMax)
-    chatDelayMin = Math.min(chatDelay, chatDelayMin)
-    console.log(`ChatDelay ${chatDelay} ms`)
-}
-*/
+let average = 0
+while(true) {
+    let iterations = 0
+    iterations += sendPosition(socketArray)
+    iterations += sendChat(socketArray)
+    average += iterations
 
-console.log("Chat Average: " + chatDelayTotal / iterationTimes)
-console.log("Move Average: " + moveDelayTotal / iterationTimes)
-console.log("Chat Max: " + chatDelayMax)
-console.log("Chat Min: " + chatDelayMin)
-console.log("Move Max: " + moveDelayMax)
-console.log("Move Min: " + moveDelayMin)
+    console.log(`Sent ${iterations}/25ms messages`)
+    // wait 25ms
+    await new Promise(resolve => setTimeout(resolve, 25));
+}
 
 export { };
 

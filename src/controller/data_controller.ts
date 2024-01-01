@@ -26,6 +26,7 @@ export class DataController implements WebsocketController<WebSocketData> {
     readonly redisClient: RedisClientType
     readonly properties = ["name", "position", "room", "lobby"]
     readonly MAX_DATA_AGE_MS: number
+    readonly ENABLE_PERFORMANCE_DEBUGGING: boolean
     lastTime: number = Date.now()
     constructor(server: Server) {
         this.server = server
@@ -35,6 +36,7 @@ export class DataController implements WebsocketController<WebSocketData> {
         })
         this.redisClient.on('error', (err) => console.log('Redis Client Error', err))
         this.MAX_DATA_AGE_MS = parseInt(process.env.MAX_DATA_AGE_MS || '10000')
+        this.ENABLE_PERFORMANCE_DEBUGGING = process.env.ENABLE_PERFORMANCE_DEBUGGING === 'true'
 
         setInterval(this.update.bind(this), UPDATE_INTERVAL_MS);
     }
@@ -58,11 +60,12 @@ export class DataController implements WebsocketController<WebSocketData> {
     }
 
     async writePerformance(time: number, file: string, func: string) {
-        //await this.redisClient.ts.create(`performance:${file}:${func}`)
-        await this.redisClient.ts.add(`performance:${file}:${func}`, Date.now(), time, {
-            ON_DUPLICATE: TimeSeriesDuplicatePolicies.MAX,
-            RETENTION: 10000,
-        })
+        if (this.ENABLE_PERFORMANCE_DEBUGGING) {
+            await this.redisClient.ts.add(`performance:${file}:${func}`, Date.now(), time, {
+                ON_DUPLICATE: TimeSeriesDuplicatePolicies.MAX,
+                RETENTION: 100000,
+            })
+        }
     }
 
     async getUniqueId() {
@@ -117,12 +120,9 @@ export class DataController implements WebsocketController<WebSocketData> {
         this.lastTime = timeNow
 
         const cells = await this.redisClient.keys("cell:last:*")
-        this.writePerformance(Date.now() - time, "data_controller", "update:keys")
         let promises = []
         for (const cell of cells) {
-            let timeCell = Date.now()
             promises.push(this.redisClient.xRange(cell, lastTime.toString(), timeNow.toString()).then((results) => {
-                this.writePerformance(Date.now() - timeCell, "data_controller", "update:xRange")
                 let cellResults: { [x: string]: { [key: string]: string } } = {}
                 for (const result of results) {
                     let streamData = result.message as StreamData

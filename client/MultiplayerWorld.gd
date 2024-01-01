@@ -39,8 +39,6 @@ func _on_open(message: Dictionary):
 		if properties.size() == 0:
 			_id = id
 			started.emit()
-			print("started")
-		print(properties)
 		for property in properties:
 			match property:
 				"position":

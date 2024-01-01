@@ -24,6 +24,10 @@ window/stretch/aspect="keep_width"
 
 enabled=PackedStringArray("res://addons/gdworld/plugin.cfg")
 
+[network]
+
+limits/packet_peer_stream/max_buffer_po2=32
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
