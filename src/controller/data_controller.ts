@@ -1,4 +1,4 @@
-import { RedisClientType, createClient } from "redis";
+import { RedisClientType, TimeSeriesDuplicatePolicies, createClient } from "redis";
 import { Server, ServerWebSocket } from "bun";
 import { MessageData, Vector3, WebSocketData } from "../model";
 import { WebsocketController } from "./websocket_controller";
@@ -33,6 +33,7 @@ export class DataController implements WebsocketController<WebSocketData> {
             url: process.env.REDIS_URL,
             password: process.env.REDIS_PASSWORD
         })
+        this.redisClient.on('error', (err) => console.log('Redis Client Error', err))
         this.MAX_DATA_AGE_MS = parseInt(process.env.MAX_DATA_AGE_MS || '10000')
 
         setInterval(this.update.bind(this), UPDATE_INTERVAL_MS);
@@ -41,6 +42,7 @@ export class DataController implements WebsocketController<WebSocketData> {
         await this.redisClient.connect()
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
+        let time = Date.now()
         ws.data.id = await this.getUniqueId()
         // send all data from rooms close to it
         let newData: { [key: string]: { [key: string]: string } } = {}
@@ -51,7 +53,18 @@ export class DataController implements WebsocketController<WebSocketData> {
         // empty id object means self id
         ws.send(JSON.stringify({[ws.data.id]: {}}))
         ws.send(JSON.stringify(newData))
+        this.writePerformance(Date.now() - time, "data_controller", "open")
+
     }
+
+    async writePerformance(time: number, file: string, func: string) {
+        //await this.redisClient.ts.create(`performance:${file}:${func}`)
+        await this.redisClient.ts.add(`performance:${file}:${func}`, Date.now(), time, {
+            ON_DUPLICATE: TimeSeriesDuplicatePolicies.MAX,
+            RETENTION: 10000,
+        })
+    }
+
     async getUniqueId() {
         return await this.redisClient.incr("global_id")
     }
@@ -95,32 +108,42 @@ export class DataController implements WebsocketController<WebSocketData> {
     }
 
     async update() {
+        let time = Date.now()
         if (!this.redisClient.isReady) {
             return
         }
-        const cells = await this.redisClient.keys("cell:last:*")
+        let lastTime = this.lastTime
         let timeNow = Date.now()
-        for (const cell of cells) {
-            let results = await this.redisClient.xRange(cell, this.lastTime.toString(), timeNow.toString())
-            let cellResults: { [x: string]: { [key: string]: string } } = {}
-            for (const result of results) {
-                let streamData = result.message as StreamData
-                let key = streamData.id
-                cellResults[key] = { ...cellResults[key], [streamData.property]: streamData.value }
-            }
-            if (Object.keys(cellResults).length > 0) {
-                const split = cell.split(":")
+        this.lastTime = timeNow
 
-                let channel = `[${split[2]},${split[3]},${split[4]}]`
-                this.server.publish(channel, JSON.stringify(cellResults));
-            }
+        const cells = await this.redisClient.keys("cell:last:*")
+        this.writePerformance(Date.now() - time, "data_controller", "update:keys")
+        let promises = []
+        for (const cell of cells) {
+            let timeCell = Date.now()
+            promises.push(this.redisClient.xRange(cell, lastTime.toString(), timeNow.toString()).then((results) => {
+                this.writePerformance(Date.now() - timeCell, "data_controller", "update:xRange")
+                let cellResults: { [x: string]: { [key: string]: string } } = {}
+                for (const result of results) {
+                    let streamData = result.message as StreamData
+                    let key = streamData.id
+                    cellResults[key] = { ...cellResults[key], [streamData.property]: streamData.value }
+                }
+                if (Object.keys(cellResults).length > 0) {
+                    const split = cell.split(":")
+    
+                    let channel = `[${split[2]},${split[3]},${split[4]}]`
+                    this.server.publish(channel, JSON.stringify(cellResults));
+                }
+            }))
         }
+        await Promise.all(promises)
+        this.writePerformance(Date.now() - time, "data_controller", "update")
         // after sending the data, trim entries older than 10 seconds
         for (const cell of cells) {
             await this.redisClient.xTrim(cell, 'MINID', this.lastTime - this.MAX_DATA_AGE_MS, {
                 strategyModifier: '~'
             })
         }
-        this.lastTime = timeNow
     }
 }

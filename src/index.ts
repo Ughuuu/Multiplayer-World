@@ -8,21 +8,23 @@ const routesHandler = new RoutesHandler()
 const server = Bun.serve<WebSocketData>({
     async fetch(req, server) {
         if (await websocketHandler.fetch(req, server)) {
-            return;
+            return new Response(null);
         }
         return await routesHandler.fetch(req, server)
     },
     websocket: {
-        open(ws) {
-            websocketHandler.open(ws)
+        async open(ws) {
+            await websocketHandler.open(ws)
         },
-        message(ws, message) {
-            websocketHandler.message(ws, message as string)
+        async message(ws, message) {
+            await websocketHandler.message(ws, message as string)
         },
-        close(ws, code, reason) {
-            websocketHandler.close(ws, code, reason)
+        async close(ws, code, reason) {
+            await websocketHandler.close(ws, code, reason)
         }
     }
 });
+
+websocketHandler.createControllers(server)
 
 console.log(`🦊 WebSocket is running at http://${server.hostname}:${server.port}`);

@@ -115,4 +115,5 @@ func _process(delta):
 		var code = _socket.get_close_code()
 		var reason = _socket.get_close_reason()
 		await get_tree().create_timer(1).timeout
-		get_tree().reload_current_scene()
+		if (get_tree() != null):
+			get_tree().reload_current_scene()

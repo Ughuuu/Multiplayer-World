@@ -1,8 +1,8 @@
 import { MessageType } from "./model";
 
 const maxSockets = 100
-//const url = 'ws://0.0.0.0:3000'
-const url = 'wss://world.appsinacup.com'
+const url = 'ws://0.0.0.0:3000/ws'
+//const url = 'wss://world.appsinacup.com/ws'
 const maxRetries = 200
 const iterationTimes = 100
 let connecting = true
@@ -16,7 +16,7 @@ function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[])
     socket.addEventListener('close', () => {
         if (connecting) {
             process.stdout.write('r')
-            socketArray[idx] = new WebSocket(url)
+            socketArray[idx] = connectToServer(url, idx, socketArray)
         } else {
             throw new Error('Timed out waiting for socket to open');
         }
@@ -26,16 +26,10 @@ function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[])
 
     socket.addEventListener('message', (event) => {
         let dataReturn = JSON.parse(event.data)
-        /*
-        let messageType = dataReturn["type"] as ReturnType
-        switch (messageType) {
-            case ReturnType.Send_Chat_Message: {
-                chatReceived++
-            }break
-            case ReturnType.Send_Movement: {
-                moveReceived++
-            }break
-        }*/
+        console.log(dataReturn)
+        for (const id of dataReturn) {
+            console.log(id)
+        }
     });
     return socket
 }

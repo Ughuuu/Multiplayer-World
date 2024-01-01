@@ -25,9 +25,10 @@ size = Vector2(62, 1190.5)
 
 [node name="MultiplayerWorld" type="Node" parent="."]
 script = ExtResource("1_wjasi")
-url = "ws://localhost:3000/ws"
+url = "ws://localhost:6000/ws"
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+process_mode = 4
 script = ExtResource("4_c86ke")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]

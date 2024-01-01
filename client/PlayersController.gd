@@ -3,7 +3,7 @@ extends Node2D
 @export var multiplayer_world: MultiplayerWorld
 @export var current_player_node: Player
 var player_template: PackedScene = load("res://player.tscn")
-var max_players = 100
+var max_players = 1000
 var player_nodes : Array[Node2D]
 var target_positions: Dictionary
 var active_players: Dictionary
@@ -42,9 +42,10 @@ func _moved(player: MultiplayerWorld.Info):
 	# if player is not instantiated, instantiate him at current position
 	if !active_players.has(player.id):
 		active_players[player.id] = player_nodes.pop_front()
-		active_players[player.id].set_text(player.name)
-		active_players[player.id].global_position = Vector2(player.position.x, player.position.y)
-		active_players[player.id].visible = true
+		if active_players[player.id] != null:
+			active_players[player.id].set_text(player.name)
+			active_players[player.id].global_position = Vector2(player.position.x, player.position.y)
+			active_players[player.id].visible = true
 
 func _physics_process(delta):
 	for active_player_id in active_players:
