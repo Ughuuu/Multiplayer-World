@@ -20,6 +20,7 @@ const server = Bun.serve<WebSocketData>({
             await websocketHandler.message(ws, message as string)
         },
         async close(ws, code, reason) {
+            console.log('closed ', reason)
             await websocketHandler.close(ws, code, reason)
         }
     }

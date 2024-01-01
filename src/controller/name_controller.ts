@@ -10,16 +10,16 @@ export class NameController implements WebsocketController<WebSocketData>, CellL
         this.dataController = dataController
     }
     async onCellUpdated(ws: ServerWebSocket<WebSocketData>, newCell: Vector3) {
-        await this.dataController.removeData(ws, "name")
-        await this.dataController.writeCellData(newCell, ws.data.id, "name", ws.data.inMemoryData.name, true)
+        await this.dataController.removeData(ws, "n")
+        await this.dataController.writeCellData(newCell, ws.data.id, "n", ws.data.inMemoryData.name, true)
     }
 
     async open(ws: ServerWebSocket<WebSocketData>) {
-        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "name", ws.data.inMemoryData.name, true)
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "n", ws.data.inMemoryData.name, true)
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
-        await this.dataController.removeData(ws, "name")
+        await this.dataController.removeData(ws, "n")
     }
 
     async message(ws: ServerWebSocket<WebSocketData>, message_data: MessageData) {
@@ -28,7 +28,7 @@ export class NameController implements WebsocketController<WebSocketData>, CellL
                 let newName = message_data.data
                 if (ws.data.inMemoryData.name !== newName) {
                     ws.data.inMemoryData.name = newName
-                    this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "name", newName, true)
+                    this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "n", newName, true)
                 }
             } break
         }

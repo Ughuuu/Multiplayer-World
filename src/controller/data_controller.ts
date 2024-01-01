@@ -24,9 +24,10 @@ export const UPDATE_INTERVAL_MS = parseInt(process.env.UPDATE_INTERVAL_MS || '50
 export class DataController implements WebsocketController<WebSocketData> {
     readonly server: Server
     readonly redisClient: RedisClientType
-    readonly properties = ["name", "position", "room", "lobby"]
+    readonly properties = ["n", "p", "r"]
     readonly MAX_DATA_AGE_MS: number
     readonly ENABLE_PERFORMANCE_DEBUGGING: boolean
+    performanceCreated: { [key: string]: { [key: string]: boolean } } = {}
     lastTime: number = Date.now()
     constructor(server: Server) {
         this.server = server
@@ -48,10 +49,13 @@ export class DataController implements WebsocketController<WebSocketData> {
         ws.data.id = await this.getUniqueId()
         // send all data from rooms close to it
         let newData: { [key: string]: { [key: string]: string } } = {}
+        let promises = []
         for (const cell of ws.data.inMemoryData.position.getCellRooms()) {
-            const cellData = await this.readData("cell", cell.toCellString())
-            newData = { ...newData, ...cellData }
+            promises.push(this.readData("cell", cell.toCellString()).then((data) => {
+                newData = { ...newData, ...data }
+            }))
         }
+        await Promise.all(promises)
         // empty id object means self id
         ws.send(JSON.stringify({[ws.data.id]: {}}))
         ws.send(JSON.stringify(newData))
@@ -61,9 +65,20 @@ export class DataController implements WebsocketController<WebSocketData> {
 
     async writePerformance(time: number, file: string, func: string) {
         if (this.ENABLE_PERFORMANCE_DEBUGGING) {
+            // first time this might not exist
+            if (!this.performanceCreated[file]) {
+                this.performanceCreated[file] = {}
+            }
+            if (!this.performanceCreated[file][func]) {
+                this.performanceCreated[file][func] = true
+                await this.redisClient.ts.create(`performance:${file}:${func}`, {
+                    DUPLICATE_POLICY: TimeSeriesDuplicatePolicies.MAX,
+                    RETENTION: 600000,
+                })
+            }
             await this.redisClient.ts.add(`performance:${file}:${func}`, Date.now(), time, {
                 ON_DUPLICATE: TimeSeriesDuplicatePolicies.MAX,
-                RETENTION: 100000,
+                RETENTION: 600000,
             })
         }
     }

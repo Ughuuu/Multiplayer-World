@@ -47,7 +47,7 @@ func _moved(player: MultiplayerWorld.Info):
 			active_players[player.id].global_position = Vector2(player.position.x, player.position.y)
 			active_players[player.id].visible = true
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	for active_player_id in active_players:
 		var active_player_node = active_players[active_player_id]
 		active_players[active_player_id].set_text(multiplayer_world._players[active_player_id].name)

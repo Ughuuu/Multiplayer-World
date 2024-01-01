@@ -22,6 +22,8 @@ func _send_chat_message(message: String):
 
 func _update_chat_message(message: String):
 	proximity_label.text += message + "\n"
+	if proximity_label.text.length() > 400:
+		proximity_label.text = proximity_label.text.substr(proximity_label.text.length() - 400)
 
 func _update_stats_message(count: int):
 	stats_label.text = "Online: " + str(count)

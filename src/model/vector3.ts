@@ -1,5 +1,5 @@
 export class Vector3 {
-    static MAX_SPEED = 500;
+    static MAX_SPEED = 5000;
     static MIN_SPEED = 1e-10;
     static CELL_SIZE = 1.0 / 1000;
     x: number

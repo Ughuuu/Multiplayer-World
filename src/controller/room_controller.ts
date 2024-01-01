@@ -12,7 +12,7 @@ export class RoomController implements WebsocketController<WebSocketData>, CellL
     async onCellUpdated(ws: ServerWebSocket<WebSocketData>, newCell: Vector3) {
         await this.dataController.removeData(ws, "room")
         if (ws.data.inMemoryData.room) {
-            await this.dataController.writeCellData(newCell, ws.data.id, "room", ws.data.inMemoryData.room, true)
+            await this.dataController.writeCellData(newCell, ws.data.id, "r", ws.data.inMemoryData.room, true)
         }
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
@@ -24,15 +24,15 @@ export class RoomController implements WebsocketController<WebSocketData>, CellL
 
     async close(ws: ServerWebSocket<WebSocketData>) {
         ws.unsubscribe(`room-${ws.data.inMemoryData.room}`)
-        this.dataController.removeData(ws, "room")
+        this.dataController.removeData(ws, "r")
     }
 
     async message(ws: ServerWebSocket<WebSocketData>, message_data: MessageData) {
         switch (message_data.type) {
             case MessageType.Receive_Room_Join: {
                 if (ws.data.inMemoryData.room !== message_data.data) {
-                    ws.unsubscribe(`room-${ws.data.inMemoryData.room}`)
-                    ws.subscribe(`room-${message_data.data}`)
+                    ws.unsubscribe(`r-${ws.data.inMemoryData.room}`)
+                    ws.subscribe(`r-${message_data.data}`)
                     ws.data.inMemoryData.room = message_data.data
                     this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "room", ws.data.inMemoryData.room, true)
                 }

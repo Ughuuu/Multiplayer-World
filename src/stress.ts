@@ -1,9 +1,9 @@
 import { MessageType } from "./model";
 
-const maxSockets = 50
-//const url = 'ws://0.0.0.0:6000/ws'
-const url = 'wss://world.appsinacup.com/ws'
-const maxRetries = 200
+const maxSockets = 200
+const url = 'ws://0.0.0.0:6000/ws'
+//const url = 'wss://world.appsinacup.com/ws'
+const maxRetries = 500
 let connecting = true
 
 let probability = 0.5
@@ -54,7 +54,7 @@ function sendPosition(sockets: WebSocket[]) {
         if (socket.readyState !== WebSocket.OPEN) {
             throw new Error('Timed out waiting for socket to open');
         }
-        socket.send(JSON.stringify({ type: MessageType.Receive_Movement_Position, data: {x: Math.random(), y: Math.random()} }))
+        socket.send(JSON.stringify({ type: MessageType.Receive_Movement_Position, data: {x: Math.random() * 2000 - 1000, y: Math.random() * 2000 - 1000} }))
     }
     return iterations
 }

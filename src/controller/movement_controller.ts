@@ -15,7 +15,7 @@ export class MovementController implements WebsocketController<WebSocketData> {
         this.cellListener = cellListener
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
-        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "position", ws.data.inMemoryData.position.toString(), true)
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "p", ws.data.inMemoryData.position.toString(), true)
         this.subscribeToCell(ws, ws.data.inMemoryData.position)
     }
 
@@ -40,7 +40,7 @@ export class MovementController implements WebsocketController<WebSocketData> {
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
-        await this.dataController.removeData(ws, "position")
+        await this.dataController.removeData(ws, "p")
         this.unsubscribeFromCell(ws, ws.data.inMemoryData.position)
     }
 
@@ -58,12 +58,12 @@ export class MovementController implements WebsocketController<WebSocketData> {
                 }
                 // update cell if needed
                 if (newPos.toCellString() != ws.data.inMemoryData.position.toCellString()) {
-                    this.dataController.removeData(ws, "position")
+                    this.dataController.removeData(ws, "p")
                     this.updateCell(ws, newPos)
                 }
                 // update in memory position
                 ws.data.inMemoryData.position = newPos
-                this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "position", newPos.toString(), true)
+                this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "p", newPos.toString(), true)
             } break
         }
     }

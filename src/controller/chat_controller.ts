@@ -15,13 +15,13 @@ export class ChatController implements WebsocketController<WebSocketData> {
     }
     async open(ws: ServerWebSocket<WebSocketData>) {
         let msg = `[b]${ws.data.inMemoryData.name}[/b]: joined.`
-        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "chat", msg)
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "c", msg)
     }
 
     async close(ws: ServerWebSocket<WebSocketData>) {
         let msg = `[b]${ws.data.inMemoryData.name}[/b]: left.`
-        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "chat", msg)
-        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "left")
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "c", msg)
+        await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "l")
     }
 
     async message(ws: ServerWebSocket<WebSocketData>, message_data: MessageData) {
@@ -35,7 +35,7 @@ export class ChatController implements WebsocketController<WebSocketData> {
                 // check if we are allowed to post in the room
                 if (chatMessage.room == ws.data.inMemoryData.position.toCellString()) {
                     let msg = `[b]${ws.data.inMemoryData.name}[/b]: ${chatMessage.message}`
-                    await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "chat", msg)
+                    await this.dataController.writeCellData(ws.data.inMemoryData.position, ws.data.id, "c", msg)
                 }
                 if (chatMessage.room == 'room-' + ws.data.inMemoryData.room) {
 

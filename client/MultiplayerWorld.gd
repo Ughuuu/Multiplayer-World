@@ -41,15 +41,15 @@ func _on_open(message: Dictionary):
 			started.emit()
 		for property in properties:
 			match property:
-				"position":
+				"p":
 					var position_array: Array = JSON.parse_string(properties[property])
 					info.position = Vector3(position_array[0], position_array[1], position_array[2])
 					moved.emit(info)
-				"chat":
+				"c":
 					chated.emit(properties[property] as String)
-				"name":
+				"n":
 					info.name = properties[property] as String
-				"left":
+				"l":
 					_players.erase(id)
 					left.emit(info)
 
@@ -57,7 +57,7 @@ func move(position: Vector3):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": "position",
+		"type": "p",
 		"data": {
 			"x": position.x,
 			"y": position.y,
@@ -70,7 +70,7 @@ func move2(position: Vector2):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": "position",
+		"type": "p",
 		"data": {
 			"x": position.x,
 			"y": position.y
@@ -81,27 +81,30 @@ func chat(message: String, room: String = "current_cell"):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": "chat",
+		"type": "c",
 		"data": {
 			"message": message,
 			"room": room
 		}
 	}))
 
-func rename(name: String):
+func rename(rename: String):
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	_socket.send_text(JSON.stringify({
-		"type": "name",
-		"data": name,
+		"type": "n",
+		"data": rename,
 	}))
 
-func _process(delta):
+func _process(_delta):
 	_socket.poll()
 	var state = _socket.get_ready_state()
 	if state == WebSocketPeer.STATE_OPEN:
 		while _socket.get_available_packet_count():
-			var dict = JSON.parse_string(_socket.get_packet().get_string_from_utf8()) as Dictionary
+			var message = _socket.get_packet().get_string_from_utf8()
+			if message == "":
+				return
+			var dict = JSON.parse_string(message) as Dictionary
 			if dict == null:
 				printerr("Failed to decode message")
 			else:
@@ -110,8 +113,6 @@ func _process(delta):
 		# Keep polling to achieve proper close.
 		pass
 	elif state == WebSocketPeer.STATE_CLOSED:
-		var code = _socket.get_close_code()
-		var reason = _socket.get_close_reason()
 		await get_tree().create_timer(1).timeout
 		if (get_tree() != null):
 			get_tree().reload_current_scene()
