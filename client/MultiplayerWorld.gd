@@ -42,7 +42,6 @@ func _on_open(message: Dictionary):
 		# Start event contains just the id of the user
 		if properties.size() == 0:
 			_id = id
-			print("started")
 			started.emit()
 		for property in properties:
 			match property:
