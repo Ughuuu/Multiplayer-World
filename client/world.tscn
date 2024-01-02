@@ -58,7 +58,7 @@ current_player_node = NodePath("../CharacterBody2D/Sprite2D")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="MarginContainer" type="Window" parent="CanvasLayer" node_paths=PackedStringArray("multiplayer_world", "line_edit", "proximity_label", "team_label", "stats_label", "tab_container")]
+[node name="MarginContainer" type="Window" parent="CanvasLayer" node_paths=PackedStringArray("multiplayer_world", "line_edit", "proximity_label", "team_label", "tab_container")]
 title = "Chat"
 position = Vector2i(0, 36)
 size = Vector2i(490, 280)
@@ -68,7 +68,6 @@ multiplayer_world = NodePath("../../MultiplayerWorld")
 line_edit = NodePath("VBoxContainer/LineEdit")
 proximity_label = NodePath("VBoxContainer/TabContainer/Proximity/RichTextLabel")
 team_label = NodePath("VBoxContainer/TabContainer/Team/RichTextLabel")
-stats_label = NodePath("")
 tab_container = NodePath("VBoxContainer/TabContainer")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MarginContainer"]
