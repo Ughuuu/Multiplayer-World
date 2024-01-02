@@ -18,7 +18,11 @@ var _id : String
 var _players : Dictionary
 
 @export var url := "wss://world.appsinacup.com/ws"
+# local
+# ws://localhost:6000/ws
 @export var debug := true
+
+var _start_time = Time.get_ticks_msec()
 
 func _ready():
 	var err = _socket.connect_to_url(url)
@@ -38,6 +42,7 @@ func _on_open(message: Dictionary):
 		# Start event contains just the id of the user
 		if properties.size() == 0:
 			_id = id
+			print("started")
 			started.emit()
 		for property in properties:
 			match property:
@@ -112,7 +117,7 @@ func _process(_delta):
 	elif state == WebSocketPeer.STATE_CLOSING:
 		# Keep polling to achieve proper close.
 		pass
-	elif state == WebSocketPeer.STATE_CLOSED:
+	elif state == WebSocketPeer.STATE_CLOSED or Time.get_ticks_msec() - _start_time > 5 * 1000:
 		await get_tree().create_timer(1).timeout
 		if (get_tree() != null):
 			get_tree().reload_current_scene()
