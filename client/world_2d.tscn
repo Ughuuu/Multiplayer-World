@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3 uid="uid://64ja8xphwkof"]
 
-[ext_resource type="Script" path="res://MultiplayerWorld.gd" id="1_wjasi"]
-[ext_resource type="Script" path="res://ChatController.gd" id="2_b7gn2"]
-[ext_resource type="Texture2D" uid="uid://coqjollnwgdxa" path="res://icon.svg" id="3_xpbh1"]
-[ext_resource type="Script" path="res://CharacterBody2D.gd" id="4_c86ke"]
-[ext_resource type="Script" path="res://PlayersController.gd" id="5_nv26b"]
-[ext_resource type="Script" path="res://Player.gd" id="6_tj4ai"]
+[ext_resource type="Script" path="res://MultiplayerWorld.gd" id="1_ke06m"]
+[ext_resource type="Script" path="res://CharacterBody2D.gd" id="2_yal5n"]
+[ext_resource type="Texture2D" uid="uid://coqjollnwgdxa" path="res://icon.svg" id="3_6gvnf"]
+[ext_resource type="Script" path="res://Player.gd" id="4_ha77o"]
+[ext_resource type="Script" path="res://PlayersController.gd" id="5_ek8f0"]
+[ext_resource type="Script" path="res://ChatController.gd" id="6_rq64c"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_tjhxc"]
 radius = 61.0082
@@ -24,15 +24,15 @@ size = Vector2(62, 1190.5)
 [node name="World" type="Node2D"]
 
 [node name="MultiplayerWorld" type="Node" parent="."]
-script = ExtResource("1_wjasi")
+script = ExtResource("1_ke06m")
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
 process_mode = 4
-script = ExtResource("4_c86ke")
+script = ExtResource("2_yal5n")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
-texture = ExtResource("3_xpbh1")
-script = ExtResource("6_tj4ai")
+texture = ExtResource("3_6gvnf")
+script = ExtResource("4_ha77o")
 
 [node name="Label" type="Label" parent="CharacterBody2D/Sprite2D"]
 custom_minimum_size = Vector2(150, 2.08165e-12)
@@ -52,7 +52,7 @@ shape = SubResource("CircleShape2D_tjhxc")
 zoom = Vector2(0.6, 0.6)
 
 [node name="Players" type="Node2D" parent="." node_paths=PackedStringArray("multiplayer_world", "current_player_node")]
-script = ExtResource("5_nv26b")
+script = ExtResource("5_ek8f0")
 multiplayer_world = NodePath("../MultiplayerWorld")
 current_player_node = NodePath("../CharacterBody2D/Sprite2D")
 
@@ -63,7 +63,7 @@ title = "Chat"
 position = Vector2i(0, 36)
 size = Vector2i(490, 280)
 theme = SubResource("Theme_ftuyb")
-script = ExtResource("2_b7gn2")
+script = ExtResource("6_rq64c")
 multiplayer_world = NodePath("../../MultiplayerWorld")
 line_edit = NodePath("VBoxContainer/LineEdit")
 proximity_label = NodePath("VBoxContainer/TabContainer/Proximity/RichTextLabel")

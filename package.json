@@ -13,6 +13,7 @@
   },
   "module": "src/index.js",
   "dependencies": {
+    "mediasoup": "^3.13.14",
     "redis": "^4.6.12",
     "unique-names-generator": "^4.7.1"
   }

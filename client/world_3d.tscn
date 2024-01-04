@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://cpgem8bgecbhw"]
+
+[ext_resource type="Script" path="res://MultiplayerWorld.gd" id="1_whsep"]
+
+[node name="World3d" type="Node3D"]
+
+[node name="MultiplayerWorld" type="Node" parent="."]
+script = ExtResource("1_whsep")

@@ -116,7 +116,7 @@ func _process(_delta):
 	elif state == WebSocketPeer.STATE_CLOSING:
 		# Keep polling to achieve proper close.
 		pass
-	elif state == WebSocketPeer.STATE_CLOSED or Time.get_ticks_msec() - _start_time > 5 * 1000:
+	elif state == WebSocketPeer.STATE_CLOSED or Time.get_ticks_msec() - _start_time > 15 * 1000:
 		await get_tree().create_timer(1).timeout
 		if (get_tree() != null):
 			get_tree().reload_current_scene()

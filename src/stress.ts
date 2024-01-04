@@ -1,12 +1,12 @@
 import { MessageType } from "./model";
 
-const maxSockets = 50
+const maxSockets = 20
 //const url = 'ws://0.0.0.0:6000/ws'
 const url = 'wss://world.appsinacup.com/ws'
 const maxRetries = 500
 let connecting = true
 
-let probability = 0.3
+let probability = 0.1
 
 
 function connectToServer(url: string, idx: number = 0, socketArray: WebSocket[]) {
